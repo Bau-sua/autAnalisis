@@ -2,6 +2,7 @@
 .atl/
 .fresh/
 .pi-lens/
+.pi/
 
 # Python
 __pycache__/
