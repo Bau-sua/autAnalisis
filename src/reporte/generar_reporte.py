@@ -253,7 +253,7 @@ def construir_contexto_anual(kpis: dict, año: int) -> dict:
         ctx["grafico_stock_categoria"] = grafico_stock_por_categoria_reporte(stock, año)
 
         # Variación YoY
-        if año - 1 in stock_anual.index:
+        if año in stock_anual.index and (año - 1) in stock_anual.index:
             var = (stock_anual[año] / stock_anual[año - 1] - 1) * 100
             ctx["stock_var_yoy"] = _fmt_pct(var)
         else:
