@@ -5,7 +5,6 @@ Los datos se esperan limpios — la lógica de carga y filtrado está en las pá
 """
 
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import plotly.express as px
@@ -41,7 +40,7 @@ DEPARTAMENTOS: dict[int, str] = {
 LAYOUT_BASE = dict(
     template="plotly_white",
     font=dict(family="sans-serif", size=12),
-    margin=dict(l=40, r=40, t=60, b=40),
+    margin=dict(l=40, r=40, t=80, b=40),
     hovermode="x unified",
 )
 
@@ -71,12 +70,11 @@ def grafico_stock_evolucion(df: pd.DataFrame) -> go.Figure:
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=anual["año"], y=anual["total"] / 1e6,
-        mode="lines+markers+text",
+        mode="lines+markers",
         line=dict(color=COLOR_PRIMARIO, width=3),
         marker=dict(size=10, color=COLOR_PRIMARIO),
-        text=[f"{v:.2f}M" for v in anual["total"] / 1e6],
-        textposition="top center",
         name="Stock total",
+        hovertemplate="%{x}<br>%{y:.2f}M cabezas<extra></extra>",
     ))
 
     # Barras de variación YoY
@@ -96,7 +94,7 @@ def grafico_stock_evolucion(df: pd.DataFrame) -> go.Figure:
         ],
         marker_color=colores_var,
         text=textos_var,
-        textposition="outside",
+        textposition="auto",
         name="Variación interanual",
         yaxis="y2",
         opacity=0.6,
@@ -108,7 +106,7 @@ def grafico_stock_evolucion(df: pd.DataFrame) -> go.Figure:
         xaxis=dict(title="Año", dtick=1),
         yaxis=dict(title="Millones de cabezas", side="left"),
         yaxis2=dict(title="", overlaying="y", side="right", showgrid=False,
-                     showticklabels=False),
+                     showticklabels=False, range=[-0.5, None]),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         bargap=0.4,
     )
@@ -134,10 +132,10 @@ def grafico_stock_por_departamento(df: pd.DataFrame, año: int) -> go.Figure:
         color_continuous_scale="Greens",
         text=[f"{v/1000:,.0f}k" for v in depto["cabezas"]],
     )
-    fig.update_traces(textposition="outside")
+    fig.update_traces(textposition="outside", cliponaxis=False)
     fig.update_layout(
         **LAYOUT_BASE,
-        xaxis=dict(title="Cabezas"),
+        xaxis=dict(title="Cabezas", range=[0, depto["cabezas"].max() * 1.15]),
         yaxis=dict(title=""),
         coloraxis_showscale=False,
         showlegend=False,
@@ -207,29 +205,32 @@ def grafico_faena_anual(df: pd.DataFrame) -> go.Figure:
     df = df.copy().dropna(subset=["faena_total_cab"])
 
     fig = go.Figure()
+    max_faena = (df["faena_total_cab"] / 1000).max()
     fig.add_trace(go.Bar(
         x=df["año"], y=df["faena_total_cab"] / 1000,
         marker_color=COLOR_VACA,
         text=[f"{v/1000:,.0f}k" for v in df["faena_total_cab"]],
-        textposition="outside",
+        textposition="auto",
         name="Faena total",
+        hovertemplate="%{x}<br>%{y:,.0f}k cabezas<extra></extra>",
     ))
 
-    # Anotar variación
+    # Anotar variación (offset dinámico basado en el máximo)
+    offset = max_faena * 0.05
     for _, row in df.iterrows():
         if pd.notna(row.get("variacion_faena_yoy_pct")):
             color = COLOR_PELIGRO if row["variacion_faena_yoy_pct"] < 0 else COLOR_AZUL
             fig.add_annotation(
-                x=row["año"], y=row["faena_total_cab"] / 1000 + 3,
+                x=row["año"], y=row["faena_total_cab"] / 1000 + offset,
                 text=f"{row['variacion_faena_yoy_pct']:+.1f}%",
-                showarrow=False, font=dict(color=color, size=10),
+                showarrow=False, font=dict(color=color, size=11, weight="bold"),
             )
 
     fig.update_layout(
         **LAYOUT_BASE,
         title="Faena Anual — San Luis",
         xaxis=dict(title="Año", dtick=1),
-        yaxis=dict(title="Miles de cabezas"),
+        yaxis=dict(title="Miles de cabezas", range=[0, max_faena * 1.2]),
         showlegend=False,
     )
     return fig
@@ -367,30 +368,34 @@ def grafico_pp_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
     fig.add_trace(go.Bar(
         x=df["año"], y=df["pp_provincial_mm"],
         marker_color=colores,
-        text=[f"{v:,.0f} mm" for v in df["pp_provincial_mm"]],
-        textposition="outside",
+        text=[f"{v:,.0f}" for v in df["pp_provincial_mm"]],
+        textposition="auto",
+        hovertemplate="%{x}<br>%{y:,.0f} mm<extra></extra>",
     ))
 
-    # Anotaciones de anomalía
+    # Anotaciones de anomalía (solo valores significativos, posicionadas mejor)
+    max_pp = df["pp_provincial_mm"].max()
+    offset = max_pp * 0.05  # 5% del valor máximo para espaciado dinámico
     for i, (_, row) in enumerate(df.iterrows()):
-        if textos[i]:
+        if textos[i] and abs(row.get("anomalia_provincial_pct", 0)) > 15:
             fig.add_annotation(
-                x=row["año"], y=row["pp_provincial_mm"] + 15,
+                x=row["año"], y=row["pp_provincial_mm"] + offset,
                 text=textos[i],
                 showarrow=False,
-                font=dict(color=colores[i], size=10, weight="bold"),
+                font=dict(color=colores[i], size=11, weight="bold"),
             )
 
     # Media histórica
     media = df["pp_provincial_mm"].mean()
     fig.add_hline(y=media, line_dash="dash", line_color="gray",
-                  annotation_text=f"Media: {media:,.0f} mm")
+                  annotation_text=f"Media: {media:,.0f} mm",
+                  annotation_position="right")
 
     fig.update_layout(
         **LAYOUT_BASE,
         title="Precipitación Anual — San Luis",
         xaxis=dict(title="Año", dtick=1),
-        yaxis=dict(title="Milímetros"),
+        yaxis=dict(title="Milímetros", rangemode="tozero"),
         showlegend=False,
     )
     return fig
@@ -412,6 +417,7 @@ def grafico_pp_anomalia_deptos(df_detalle: pd.DataFrame, año: int) -> go.Figure
         for v in df_año["anomalia_pp_pct"]
     ]
 
+    max_anom = df_año["anomalia_pp_pct"].abs().max()
     fig = go.Figure()
     fig.add_trace(go.Bar(
         y=df_año["depto_nombre"], x=df_año["anomalia_pp_pct"],
@@ -419,6 +425,8 @@ def grafico_pp_anomalia_deptos(df_detalle: pd.DataFrame, año: int) -> go.Figure
         marker_color=colores,
         text=[f"{v:+.1f}%" for v in df_año["anomalia_pp_pct"]],
         textposition="outside",
+        cliponaxis=False,
+        hovertemplate="%{y}<br>Anomalía: %{x:+.1f}%<extra></extra>",
     ))
 
     fig.add_vline(x=0, line_width=1, line_color="black")
@@ -426,7 +434,7 @@ def grafico_pp_anomalia_deptos(df_detalle: pd.DataFrame, año: int) -> go.Figure
     fig.update_layout(
         **LAYOUT_BASE,
         title=f"Anomalía de Precipitación por Departamento — {año}",
-        xaxis=dict(title="Anomalía (%)"),
+        xaxis=dict(title="Anomalía (%)", range=[-max_anom * 1.2, max_anom * 1.2]),
         yaxis=dict(title=""),
         showlegend=False,
     )
