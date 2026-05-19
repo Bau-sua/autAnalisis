@@ -11,7 +11,6 @@ Uso:
     texto = generar_narrativa(ctx, tipo="anual")
 """
 
-import json
 import logging
 import os
 from typing import Any
@@ -152,7 +151,7 @@ def _construir_prompt_usuario(ctx: dict[str, Any], tipo: str) -> str:
     return "\n".join(lineas)
 
 
-def _narrativa_fallback(ctx: dict[str, Any], tipo: str) -> str:
+def _narrativa_fallback(ctx: dict[str, Any], _tipo: str) -> str:
     """Genera un resumen basado en templates cuando no hay API key disponible.
 
     Args:
