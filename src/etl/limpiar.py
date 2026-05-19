@@ -224,9 +224,11 @@ def tratar_outliers(df: pd.DataFrame) -> pd.DataFrame:
         if serie.isnull().all() or serie.nunique() < 2:
             continue
 
-        # Determinar columnas de agrupación
+        # Determinar columnas de agrupación para detección contextual.
+        # Incluir 'año' SIEMPRE que exista: evita que la inflación
+        # en series temporales nominales (precios) se confunda con outliers.
         grupos = []
-        for gcol in ["id_departamento", "id_categoria"]:
+        for gcol in ["id_departamento", "id_categoria", "año"]:
             if gcol in df.columns:
                 grupos.append(gcol)
 
