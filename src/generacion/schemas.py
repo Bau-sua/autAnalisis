@@ -4,7 +4,7 @@ Define las estructuras de tablas dimensionales y de hechos basadas en datos
 reales de SENASA, IPCVA y MAGyP para la provincia de San Luis, Argentina.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Optional
 

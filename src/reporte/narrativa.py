@@ -167,7 +167,6 @@ def _narrativa_fallback(ctx: dict[str, Any], _tipo: str) -> str:
     stock = ctx.get("stock_total", "—")
     var_stock = ctx.get("stock_var_yoy", "—")
     if stock != "—":
-        direccion = "creció" if var_stock.startswith("+") else "disminuyó"
         partes.append(
             f"El stock bovino de San Luis se ubicó en {stock}, lo que representa "
             f"una variación interanual del {var_stock}. Este comportamiento indica "

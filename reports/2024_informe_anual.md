@@ -17,11 +17,11 @@
 
 ### Análisis del Período
 
-En el balance anual de 2024, el stock bovino de San Luis llegó a 1.295.755 cabezas con un aumento interanual del 11%, concentrado principalmente en Gobernador Dupuy y General Pedernera. Las precipitaciones de 497 mm, un 53,4% por encima del promedio, generaron un exceso hídrico que favoreció la producción forrajera y permitió esta expansión del rodeo pese a la temperatura media de 17,6 °C. 
+El stock bovino de San Luis se ubicó en 1,295,755 cabezas, lo que representa una variación interanual del +11.0%. Este comportamiento indica una fase de retención del ciclo ganadero provincial.
 
-La faena se mantuvo casi sin cambios en 438.223 cabezas, con una variación de solo -0,2%, mientras la producción de carne alcanzó 89.676 toneladas a un peso promedio de carcasa de 189,9 kg. El precio del novillo trepó un 105,7% hasta 1.043 $/kg y la relación ternero/novillo de 1,48 señala una fase de retención en el ciclo ganadero, aunque la participación de hembras en la faena del 48,2% y la tasa de extracción del 33,8% reflejan una liquidación moderada que podría condicionar el crecimiento futuro.
+La faena total alcanzó 438,223 cabezas, con un precio promedio del novillo de 1,043 $/kg. La relación ternero/novillo se ubicó en 1.48, por encima del equilibrio de largo plazo (1.15), señal de retención.
 
-En conjunto, el año cerró con un sector en expansión gracias a las condiciones climáticas favorables y precios sólidos, pero tenés que considerar que el exceso hídrico y la alta proporción de hembras faenadas exigen un seguimiento cercano para sostener la dinámica positiva del rodeo.
+Las precipitaciones anuales totalizaron 497 mm (anomalía: +53.4%), configurando un año con condiciones favorables para la actividad ganadera.
 
 ---
 

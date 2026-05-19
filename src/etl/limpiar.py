@@ -17,10 +17,8 @@ Uso:
     uv run python src/etl/limpiar.py
 """
 
-import logging
 import sys
 from pathlib import Path
-from typing import Optional
 
 # Asegurar que src/ esté en el path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
@@ -34,10 +32,6 @@ from src.utils.config import (
     CLEAN_DIR,
     OUTLIER_ZSCORE_UMBRAL,
     RAW_DIR,
-    RANGOS_VALIDOS,
-    TIPOS_ESTABLECIMIENTO_VALIDOS,
-    TIPOS_MOVIMIENTO_VALIDOS,
-    ZONAS_VALIDAS,
 )
 from src.utils.logging_config import setup_logging
 

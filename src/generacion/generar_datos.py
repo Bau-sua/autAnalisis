@@ -454,8 +454,6 @@ def generar_fact_clima(
             )
 
     df = pd.DataFrame(registros)
-    # Algunas fechas en formato inconsistente
-    fechas_original = df["fecha"].copy()
     df = _ensuciar_fechas(pd.to_datetime(df["fecha"])).to_frame().join(
         df.drop(columns=["fecha"])
     )

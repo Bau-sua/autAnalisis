@@ -15,6 +15,14 @@
 | Precio Novillo (prom.) | 1,043 $/kg | +105.7% |
 | Precipitación Anual acum. | 497 mm | +53.4% |
 
+### Análisis del Trimestre
+
+El stock bovino de San Luis se ubicó en 1,295,755 cabezas, lo que representa una variación interanual del +11.0%. Este comportamiento indica una fase de retención del ciclo ganadero provincial.
+
+La faena total alcanzó 438,223 cabezas, con un precio promedio del novillo de 1,043 $/kg. La relación ternero/novillo se ubicó en 1.48, por encima del equilibrio de largo plazo (1.15), señal de retención.
+
+Las precipitaciones anuales totalizaron 497 mm (anomalía: +53.4%), configurando un año con condiciones favorables para la actividad ganadera.
+
 ---
 
 ## 🐄 1. Stock Bovino
