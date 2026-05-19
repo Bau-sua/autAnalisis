@@ -12,16 +12,31 @@ import plotly.graph_objects as go
 
 # ── Paleta de colores corporativa ──────────────────────────────────────────
 
-COLOR_PRIMARIO = "#1B4332"    # verde oscuro (pradera)
+COLOR_PRIMARIO = "#1B4332"  # verde oscuro (pradera)
 COLOR_SECUNDARIO = "#2D6A4F"  # verde medio
-COLOR_TERCIARIO = "#40916C"   # verde claro
-COLOR_ACCENTO = "#D4A373"     # beige/arena
-COLOR_PELIGRO = "#BC4749"     # rojo (sequía, alerta)
-COLOR_AZUL = "#2E86AB"        # azul (agua)
-COLOR_VACA = "#7B4B3A"        # marrón (ganado)
+COLOR_TERCIARIO = "#40916C"  # verde claro
+COLOR_ACCENTO = "#D4A373"  # beige/arena
+COLOR_PELIGRO = "#BC4749"  # rojo (sequía, alerta)
+COLOR_AZUL = "#2E86AB"  # azul (agua)
+COLOR_VACA = "#7B4B3A"  # marrón (ganado)
 
-PALETA_VERDES = [COLOR_PRIMARIO, COLOR_SECUNDARIO, COLOR_TERCIARIO, "#52B788", "#95D5B2", "#B7E4C7"]
-PALETA_CATEGORIAS = ["#1B4332", "#2D6A4F", "#40916C", "#D4A373", "#7B4B3A", "#BC4749", "#2E86AB"]
+PALETA_VERDES = [
+    COLOR_PRIMARIO,
+    COLOR_SECUNDARIO,
+    COLOR_TERCIARIO,
+    "#52B788",
+    "#95D5B2",
+    "#B7E4C7",
+]
+PALETA_CATEGORIAS = [
+    "#1B4332",
+    "#2D6A4F",
+    "#40916C",
+    "#D4A373",
+    "#7B4B3A",
+    "#BC4749",
+    "#2E86AB",
+]
 
 # ── Catálogos estáticos ─────────────────────────────────────────────────────
 
@@ -51,6 +66,7 @@ COLOR_HUMEDO = COLOR_AZUL
 
 # ── Carga de datos (cacheada por Streamlit, función pura aquí) ────────────
 
+
 def cargar_parquet(nombre: str) -> pd.DataFrame:
     """Carga un archivo Parquet desde data/processed/. Ruta relativa al proyecto."""
     root = Path(__file__).resolve().parents[2]
@@ -60,22 +76,30 @@ def cargar_parquet(nombre: str) -> pd.DataFrame:
 
 # ── Gráficos de Stock ──────────────────────────────────────────────────────
 
+
 def grafico_stock_evolucion(df: pd.DataFrame) -> go.Figure:
     """Gráfico de líneas: evolución del stock bovino provincial 2020-2024."""
-    anual = df.groupby("año", as_index=False).agg(
-        total=("cabezas", "sum"),
-        variacion=("variacion_provincial_yoy_pct", "first"),
-    ).dropna(subset=["total"])
+    anual = (
+        df.groupby("año", as_index=False)
+        .agg(
+            total=("cabezas", "sum"),
+            variacion=("variacion_provincial_yoy_pct", "first"),
+        )
+        .dropna(subset=["total"])
+    )
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=anual["año"], y=anual["total"] / 1e6,
-        mode="lines+markers",
-        line=dict(color=COLOR_PRIMARIO, width=3),
-        marker=dict(size=10, color=COLOR_PRIMARIO),
-        name="Stock total",
-        hovertemplate="%{x}<br>%{y:.2f}M cabezas<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=anual["año"],
+            y=anual["total"] / 1e6,
+            mode="lines+markers",
+            line=dict(color=COLOR_PRIMARIO, width=3),
+            marker=dict(size=10, color=COLOR_PRIMARIO),
+            name="Stock total",
+            hovertemplate="%{x}<br>%{y:.2f}M cabezas<extra></extra>",
+        )
+    )
 
     # Barras de variación YoY
     variacion = anual["variacion"].tolist()
@@ -83,30 +107,47 @@ def grafico_stock_evolucion(df: pd.DataFrame) -> go.Figure:
         COLOR_PELIGRO if v and v < 0 else COLOR_AZUL if v and v > 0 else "#888"
         for v in variacion
     ]
-    textos_var = [
-        f"{v:+.1f}%" if pd.notna(v) else "" for v in variacion
+    textos_var = [f"{v:+.1f}%" if pd.notna(v) else "" for v in variacion]
+
+    # Preparar datos para hover de barras (variación como porcentaje legible)
+    hover_var = [
+        f"Variación: {v:+.1f}%<br>vs año anterior" if pd.notna(v) else ""
+        for v in variacion
     ]
 
-    fig.add_trace(go.Bar(
-        x=anual["año"], y=[
-            (anual["total"].iloc[i-1] / 1e6 * (v / 100)) if i > 0 and pd.notna(v) else 0
-            for i, v in enumerate(variacion)
-        ],
-        marker_color=colores_var,
-        text=textos_var,
-        textposition="auto",
-        name="Variación interanual",
-        yaxis="y2",
-        opacity=0.6,
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=anual["año"],
+            y=[
+                (anual["total"].iloc[i - 1] / 1e6 * (v / 100))
+                if i > 0 and pd.notna(v)
+                else 0
+                for i, v in enumerate(variacion)
+            ],
+            marker_color=colores_var,
+            text=textos_var,
+            textposition="auto",
+            name="Variación interanual",
+            yaxis="y2",
+            opacity=0.6,
+            hovertemplate="%{x}<br>%{customdata}<extra></extra>",
+            customdata=hover_var,
+        )
+    )
 
     fig.update_layout(
         **LAYOUT_BASE,
         title="Evolución del Stock Bovino — San Luis",
         xaxis=dict(title="Año", dtick=1),
         yaxis=dict(title="Millones de cabezas", side="left"),
-        yaxis2=dict(title="", overlaying="y", side="right", showgrid=False,
-                     showticklabels=False, range=[-0.5, None]),
+        yaxis2=dict(
+            title="",
+            overlaying="y",
+            side="right",
+            showgrid=False,
+            showticklabels=False,
+            range=[-0.5, None],
+        ),
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         bargap=0.4,
     )
@@ -125,12 +166,14 @@ def grafico_stock_por_departamento(df: pd.DataFrame, año: int) -> go.Figure:
     depto = depto.sort_values("cabezas", ascending=True)
 
     fig = px.bar(
-        depto, x="cabezas", y="departamento",
+        depto,
+        x="cabezas",
+        y="departamento",
         orientation="h",
         title=f"Stock Bovino por Departamento — {año}",
         color="cabezas",
         color_continuous_scale="Greens",
-        text=[f"{v/1000:,.0f}k" for v in depto["cabezas"]],
+        text=[f"{v / 1000:,.0f}k" for v in depto["cabezas"]],
     )
     fig.update_traces(textposition="outside", cliponaxis=False)
     fig.update_layout(
@@ -155,7 +198,9 @@ def grafico_stock_por_categoria(df: pd.DataFrame, año: int) -> go.Figure:
     cat = cat.sort_values("cabezas", ascending=True)
 
     fig = px.pie(
-        cat, values="cabezas", names="categoria",
+        cat,
+        values="cabezas",
+        names="categoria",
         title=f"Composición del Stock por Categoría — {año}",
         color_discrete_sequence=PALETA_CATEGORIAS,
     )
@@ -166,28 +211,34 @@ def grafico_stock_por_categoria(df: pd.DataFrame, año: int) -> go.Figure:
 
 # ── Gráficos de Faena ──────────────────────────────────────────────────────
 
+
 def grafico_faena_mensual(df: pd.DataFrame) -> go.Figure:
     """Barras mensuales de faena + línea de media móvil 3 meses."""
     df = df.copy()
     df["fecha"] = pd.to_datetime(
-        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01",
-        errors="coerce"
+        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01", errors="coerce"
     )
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=df["fecha"], y=df["faena_mensual_cab"] / 1000,
-        name="Faena mensual",
-        marker_color=COLOR_VACA,
-        marker_opacity=0.7,
-        hovertemplate="%{x|%b %Y}<br>%{y:,.1f}k cabezas<extra></extra>",
-    ))
-    fig.add_trace(go.Scatter(
-        x=df["fecha"], y=df["faena_mm3"] / 1000,
-        name="Media móvil 3M",
-        line=dict(color=COLOR_PELIGRO, width=2.5),
-        hovertemplate="%{x|%b %Y}<br>MM3: %{y:,.1f}k<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=df["fecha"],
+            y=df["faena_mensual_cab"] / 1000,
+            name="Faena mensual",
+            marker_color=COLOR_VACA,
+            marker_opacity=0.7,
+            hovertemplate="%{x|%b %Y}<br>%{y:,.1f}k cabezas<extra></extra>",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=df["fecha"],
+            y=df["faena_mm3"] / 1000,
+            name="Media móvil 3M",
+            line=dict(color=COLOR_PELIGRO, width=2.5),
+            hovertemplate="%{x|%b %Y}<br>MM3: %{y:,.1f}k<extra></extra>",
+        )
+    )
 
     fig.update_layout(
         **LAYOUT_BASE,
@@ -206,14 +257,17 @@ def grafico_faena_anual(df: pd.DataFrame) -> go.Figure:
 
     fig = go.Figure()
     max_faena = (df["faena_total_cab"] / 1000).max()
-    fig.add_trace(go.Bar(
-        x=df["año"], y=df["faena_total_cab"] / 1000,
-        marker_color=COLOR_VACA,
-        text=[f"{v/1000:,.0f}k" for v in df["faena_total_cab"]],
-        textposition="auto",
-        name="Faena total",
-        hovertemplate="%{x}<br>%{y:,.0f}k cabezas<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=df["año"],
+            y=df["faena_total_cab"] / 1000,
+            marker_color=COLOR_VACA,
+            text=[f"{v / 1000:,.0f}k" for v in df["faena_total_cab"]],
+            textposition="auto",
+            name="Faena total",
+            hovertemplate="%{x}<br>%{y:,.0f}k cabezas<extra></extra>",
+        )
+    )
 
     # Anotar variación (offset dinámico basado en el máximo)
     offset = max_faena * 0.05
@@ -221,9 +275,11 @@ def grafico_faena_anual(df: pd.DataFrame) -> go.Figure:
         if pd.notna(row.get("variacion_faena_yoy_pct")):
             color = COLOR_PELIGRO if row["variacion_faena_yoy_pct"] < 0 else COLOR_AZUL
             fig.add_annotation(
-                x=row["año"], y=row["faena_total_cab"] / 1000 + offset,
+                x=row["año"],
+                y=row["faena_total_cab"] / 1000 + offset,
                 text=f"{row['variacion_faena_yoy_pct']:+.1f}%",
-                showarrow=False, font=dict(color=color, size=11, weight="bold"),
+                showarrow=False,
+                font=dict(color=color, size=11, weight="bold"),
             )
 
     fig.update_layout(
@@ -238,29 +294,37 @@ def grafico_faena_anual(df: pd.DataFrame) -> go.Figure:
 
 # ── Gráficos de Precios ────────────────────────────────────────────────────
 
+
 def grafico_precios_evolucion(df_novillo: pd.DataFrame) -> go.Figure:
     """Línea de evolución del precio del novillo ($/kg vivo) con variación YoY."""
     df = df_novillo.dropna(subset=["precio_novillo_promedio"])
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df["año"], y=df["precio_novillo_promedio"],
-        mode="lines+markers+text",
-        line=dict(color=COLOR_PRIMARIO, width=3),
-        marker=dict(size=8),
-        text=[f"${v:,.0f}" for v in df["precio_novillo_promedio"]],
-        textposition="top center",
-        name="Precio promedio anual",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=df["año"],
+            y=df["precio_novillo_promedio"],
+            mode="lines+markers+text",
+            line=dict(color=COLOR_PRIMARIO, width=3),
+            marker=dict(size=8),
+            text=[f"${v:,.0f}" for v in df["precio_novillo_promedio"]],
+            textposition="top center",
+            name="Precio promedio anual",
+        )
+    )
 
     # Anotaciones de variación
     for _, row in df.iterrows():
         if pd.notna(row.get("variacion_novillo_yoy_pct")):
-            color = COLOR_PELIGRO if row["variacion_novillo_yoy_pct"] < 0 else COLOR_AZUL
+            color = (
+                COLOR_PELIGRO if row["variacion_novillo_yoy_pct"] < 0 else COLOR_AZUL
+            )
             fig.add_annotation(
-                x=row["año"], y=row["precio_novillo_promedio"] * 1.08,
+                x=row["año"],
+                y=row["precio_novillo_promedio"] * 1.08,
                 text=f"{row['variacion_novillo_yoy_pct']:+.0f}%",
-                showarrow=False, font=dict(color=color, size=10, weight="bold"),
+                showarrow=False,
+                font=dict(color=color, size=10, weight="bold"),
             )
 
     fig.update_layout(
@@ -277,8 +341,7 @@ def grafico_precios_categorias(df_ratio: pd.DataFrame) -> go.Figure:
     """Líneas de precio para ternero, novillo y vaca (mensual)."""
     df = df_ratio.copy()
     df["fecha"] = pd.to_datetime(
-        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01",
-        errors="coerce"
+        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01", errors="coerce"
     )
 
     fig = go.Figure()
@@ -287,12 +350,18 @@ def grafico_precios_categorias(df_ratio: pd.DataFrame) -> go.Figure:
         ("precio_novillo", "Novillo", COLOR_PRIMARIO),
         ("precio_vaca", "Vaca", COLOR_VACA),
     ]:
-        fig.add_trace(go.Scatter(
-            x=df["fecha"], y=df[col],
-            mode="lines", name=nombre,
-            line=dict(color=color, width=2),
-            hovertemplate="%{x|%b %Y}<br>" + nombre + ": $%{y:,.0f}/kg<extra></extra>",
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=df["fecha"],
+                y=df[col],
+                mode="lines",
+                name=nombre,
+                line=dict(color=color, width=2),
+                hovertemplate="%{x|%b %Y}<br>"
+                + nombre
+                + ": $%{y:,.0f}/kg<extra></extra>",
+            )
+        )
 
     fig.update_layout(
         **LAYOUT_BASE,
@@ -308,32 +377,68 @@ def grafico_ratio_ternero_novillo(df_ratio: pd.DataFrame) -> go.Figure:
     """Línea del ratio ternero/novillo con bandas de alerta del ciclo ganadero."""
     df = df_ratio.copy()
     df["fecha"] = pd.to_datetime(
-        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01",
-        errors="coerce"
+        df["año"].astype(str) + "-" + df["mes"].astype(str) + "-01", errors="coerce"
     )
 
     fig = go.Figure()
 
     # Bandas de referencia
-    fig.add_hrect(y0=1.10, y1=1.25, fillcolor="green", opacity=0.1,
-                  layer="below", annotation_text="Ciclo normal", annotation_position="top right")
-    fig.add_hrect(y0=0.90, y1=1.10, fillcolor="orange", opacity=0.1,
-                  layer="below", annotation_text="Liquidación", annotation_position="bottom right")
-    fig.add_hrect(y0=1.25, y1=1.50, fillcolor=COLOR_PELIGRO, opacity=0.1,
-                  layer="below", annotation_text="Retención", annotation_position="top right")
-    fig.add_hrect(y0=1.50, y1=5.0, fillcolor="darkred", opacity=0.08,
-                  layer="below", annotation_text="Retención intensa", annotation_position="top right")
+    fig.add_hrect(
+        y0=1.10,
+        y1=1.25,
+        fillcolor="green",
+        opacity=0.1,
+        layer="below",
+        annotation_text="Ciclo normal",
+        annotation_position="top right",
+    )
+    fig.add_hrect(
+        y0=0.90,
+        y1=1.10,
+        fillcolor="orange",
+        opacity=0.1,
+        layer="below",
+        annotation_text="Liquidación",
+        annotation_position="bottom right",
+    )
+    fig.add_hrect(
+        y0=1.25,
+        y1=1.50,
+        fillcolor=COLOR_PELIGRO,
+        opacity=0.1,
+        layer="below",
+        annotation_text="Retención",
+        annotation_position="top right",
+    )
+    fig.add_hrect(
+        y0=1.50,
+        y1=5.0,
+        fillcolor="darkred",
+        opacity=0.08,
+        layer="below",
+        annotation_text="Retención intensa",
+        annotation_position="top right",
+    )
 
-    fig.add_trace(go.Scatter(
-        x=df["fecha"], y=df["relacion_ternero_novillo"],
-        mode="lines", name="Relación Ternero/Novillo",
-        line=dict(color=COLOR_PRIMARIO, width=2.5),
-        hovertemplate="%{x|%b %Y}<br>Ratio: %{y:.2f}<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=df["fecha"],
+            y=df["relacion_ternero_novillo"],
+            mode="lines",
+            name="Relación Ternero/Novillo",
+            line=dict(color=COLOR_PRIMARIO, width=2.5),
+            hovertemplate="%{x|%b %Y}<br>Ratio: %{y:.2f}<extra></extra>",
+        )
+    )
 
     # Línea de equilibrio (1.15)
-    fig.add_hline(y=1.15, line_dash="dash", line_color="gray",
-                  annotation_text="Equilibrio (1.15)", annotation_position="bottom left")
+    fig.add_hline(
+        y=1.15,
+        line_dash="dash",
+        line_color="gray",
+        annotation_text="Equilibrio (1.15)",
+        annotation_position="bottom left",
+    )
 
     fig.update_layout(
         **LAYOUT_BASE,
@@ -346,6 +451,7 @@ def grafico_ratio_ternero_novillo(df_ratio: pd.DataFrame) -> go.Figure:
 
 
 # ── Gráficos de Clima ──────────────────────────────────────────────────────
+
 
 def grafico_pp_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
     """Barras de precipitación anual provincial con anomalía."""
@@ -365,13 +471,16 @@ def grafico_pp_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
             textos.append("")
 
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        x=df["año"], y=df["pp_provincial_mm"],
-        marker_color=colores,
-        text=[f"{v:,.0f}" for v in df["pp_provincial_mm"]],
-        textposition="auto",
-        hovertemplate="%{x}<br>%{y:,.0f} mm<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Bar(
+            x=df["año"],
+            y=df["pp_provincial_mm"],
+            marker_color=colores,
+            text=[f"{v:,.0f}" for v in df["pp_provincial_mm"]],
+            textposition="auto",
+            hovertemplate="%{x}<br>%{y:,.0f} mm<extra></extra>",
+        )
+    )
 
     # Anotaciones de anomalía (solo valores significativos, posicionadas mejor)
     max_pp = df["pp_provincial_mm"].max()
@@ -379,7 +488,8 @@ def grafico_pp_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
     for i, (_, row) in enumerate(df.iterrows()):
         if textos[i] and abs(row.get("anomalia_provincial_pct", 0)) > 15:
             fig.add_annotation(
-                x=row["año"], y=row["pp_provincial_mm"] + offset,
+                x=row["año"],
+                y=row["pp_provincial_mm"] + offset,
                 text=textos[i],
                 showarrow=False,
                 font=dict(color=colores[i], size=11, weight="bold"),
@@ -387,9 +497,13 @@ def grafico_pp_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
 
     # Media histórica
     media = df["pp_provincial_mm"].mean()
-    fig.add_hline(y=media, line_dash="dash", line_color="gray",
-                  annotation_text=f"Media: {media:,.0f} mm",
-                  annotation_position="right")
+    fig.add_hline(
+        y=media,
+        line_dash="dash",
+        line_color="gray",
+        annotation_text=f"Media: {media:,.0f} mm",
+        annotation_position="right",
+    )
 
     fig.update_layout(
         **LAYOUT_BASE,
@@ -413,21 +527,23 @@ def grafico_pp_anomalia_deptos(df_detalle: pd.DataFrame, año: int) -> go.Figure
     df_año = df_año.sort_values("anomalia_pp_pct", ascending=True)
 
     colores = [
-        COLOR_AZUL if v > 0 else COLOR_PELIGRO
-        for v in df_año["anomalia_pp_pct"]
+        COLOR_AZUL if v > 0 else COLOR_PELIGRO for v in df_año["anomalia_pp_pct"]
     ]
 
     max_anom = df_año["anomalia_pp_pct"].abs().max()
     fig = go.Figure()
-    fig.add_trace(go.Bar(
-        y=df_año["depto_nombre"], x=df_año["anomalia_pp_pct"],
-        orientation="h",
-        marker_color=colores,
-        text=[f"{v:+.1f}%" for v in df_año["anomalia_pp_pct"]],
-        textposition="outside",
-        cliponaxis=False,
-        hovertemplate="%{y}<br>Anomalía: %{x:+.1f}%<extra></extra>",
-    ))
+    fig.add_trace(
+        go.Bar(
+            y=df_año["depto_nombre"],
+            x=df_año["anomalia_pp_pct"],
+            orientation="h",
+            marker_color=colores,
+            text=[f"{v:+.1f}%" for v in df_año["anomalia_pp_pct"]],
+            textposition="outside",
+            cliponaxis=False,
+            hovertemplate="%{y}<br>Anomalía: %{x:+.1f}%<extra></extra>",
+        )
+    )
 
     fig.add_vline(x=0, line_width=1, line_color="black")
 
@@ -446,14 +562,17 @@ def grafico_temperatura_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
     df = df_clima_prov.dropna(subset=["temp_media_provincial"])
 
     fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=df["año"], y=df["temp_media_provincial"],
-        mode="lines+markers",
-        line=dict(color=COLOR_PELIGRO, width=2.5),
-        marker=dict(size=8),
-        fill="tozeroy",
-        fillcolor="rgba(188, 71, 73, 0.1)",
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=df["año"],
+            y=df["temp_media_provincial"],
+            mode="lines+markers",
+            line=dict(color=COLOR_PELIGRO, width=2.5),
+            marker=dict(size=8),
+            fill="tozeroy",
+            fillcolor="rgba(188, 71, 73, 0.1)",
+        )
+    )
 
     fig.update_layout(
         **LAYOUT_BASE,
@@ -467,12 +586,13 @@ def grafico_temperatura_anual(df_clima_prov: pd.DataFrame) -> go.Figure:
 
 # ── KPI Cards ──────────────────────────────────────────────────────────────
 
+
 def formatear_numero(valor, decimales: int = 1, sufijo: str = "") -> str:
     """Formatea un número para mostrar en cards."""
     if pd.isna(valor):
         return "—"
     if abs(valor) >= 1_000_000:
-        return f"{valor/1_000_000:,.{decimales}f}M{sufijo}"
+        return f"{valor / 1_000_000:,.{decimales}f}M{sufijo}"
     if abs(valor) >= 1_000:
-        return f"{valor/1_000:,.{decimales}f}K{sufijo}"
+        return f"{valor / 1_000:,.{decimales}f}K{sufijo}"
     return f"{valor:,.{decimales}f}{sufijo}"
