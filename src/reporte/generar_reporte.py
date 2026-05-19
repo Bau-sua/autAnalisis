@@ -27,6 +27,7 @@ from jinja2 import Environment, FileSystemLoader
 
 from src.utils.config import PROCESSED_DIR, REPORTS_DIR
 from src.utils.logging_config import setup_logging
+from src.reporte.narrativa import generar_narrativa
 
 matplotlib.use("Agg")  # Non-interactive backend
 plt.rcParams["figure.dpi"] = 150
@@ -391,6 +392,9 @@ def generar_reporte(
     else:
         ctx = construir_contexto_anual(kpis, año)
         template_name = "informe_anual.md.j2"
+
+    # Generar narrativa con Grok (o fallback por template)
+    ctx["narrativa"] = generar_narrativa(ctx, tipo)
 
     # Renderizar template
     env = Environment(loader=FileSystemLoader(str(TEMPLATES_DIR)))
