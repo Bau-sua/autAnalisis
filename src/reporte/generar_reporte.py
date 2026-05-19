@@ -409,22 +409,46 @@ def generar_reporte(
     salida_md.write_text(md_content, encoding="utf-8")
     logger.info("Markdown guardado: %s", salida_md)
 
-    # Convertir a PDF
+    # Convertir a PDF (Markdown → HTML → PDF)
     if salida_pdf is None:
         salida_pdf = salida_md.with_suffix(".pdf")
 
     try:
+        import markdown
         from weasyprint import HTML
-        html_content = f"<html><body>{md_content}</body></html>"
-        # Nota: WeasyPrint espera HTML puro, no Markdown.
-        # Para una conversión correcta, se necesitaría un conversor MD→HTML (ej. markdown2).
-        # Por ahora, guardamos el Markdown y sugerimos usar pandoc.
-        logger.warning(
-            "Conversión a PDF requiere pandoc: pandoc %s -o %s --pdf-engine=weasyprint",
-            salida_md, salida_pdf,
+
+        # 1. Convertir Markdown a HTML
+        html_body = markdown.markdown(
+            md_content,
+            extensions=["tables", "fenced_code"],
         )
-    except ImportError:
-        logger.warning("WeasyPrint no instalado. PDF no generado.")
+        # 2. Envolver en HTML completo con estilos mínimos
+        html_completo = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<style>
+  body {{ font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; color: #333; }}
+  h1 {{ color: #1B4332; border-bottom: 2px solid #1B4332; padding-bottom: 8px; }}
+  h2 {{ color: #2D6A4F; margin-top: 30px; }}
+  table {{ border-collapse: collapse; width: 100%; margin: 15px 0; }}
+  th, td {{ border: 1px solid #ddd; padding: 8px 12px; text-align: left; }}
+  th {{ background: #1B4332; color: white; }}
+  img {{ max-width: 100%; height: auto; }}
+  .alert {{ padding: 12px; border-radius: 4px; margin: 10px 0; }}
+</style>
+</head>
+<body>
+{html_body}
+</body>
+</html>"""
+        # 3. Generar PDF
+        HTML(string=html_completo).write_pdf(str(salida_pdf))
+        logger.info("PDF guardado: %s", salida_pdf)
+    except ImportError as e:
+        logger.warning("Librería no instalada (%s). PDF no generado.", e)
+    except Exception as e:
+        logger.warning("Error al generar PDF: %s. Se requiere pandoc o weasyprint+markdown.", e)
 
     return salida_md
 

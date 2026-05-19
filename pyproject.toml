@@ -14,6 +14,8 @@ dependencies = [
   "streamlit>=1.40",
   "plotly>=5.24",
   "openai>=2.37.0",
+  "markdown>=3.10.2",
+  "weasyprint>=68.1",
 ]
 
 [project.optional-dependencies]
