@@ -30,3 +30,4 @@ reporte:  ## Generar reporte trimestral
 
 dashboard:  ## Iniciar dashboard Streamlit
 	uv run streamlit run dashboard/app.py
+	uv run streamlit run dashboard/app.py
