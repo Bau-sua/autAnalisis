@@ -24,11 +24,8 @@ from dashboard.components.graficos import (
     grafico_stock_por_departamento,
 )
 
-st.set_page_config(
-    page_title="Ganadería — autAnalisis",
-    page_icon="🐄",
-    layout="wide",
-)
+# NOTA: st.set_page_config() se configura en app.py.
+# En Streamlit multipage, solo la página principal debe llamarlo.
 
 
 # ── Carga de datos ─────────────────────────────────────────────────────────

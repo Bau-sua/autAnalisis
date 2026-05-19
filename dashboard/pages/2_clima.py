@@ -18,11 +18,8 @@ from dashboard.components.graficos import (
     grafico_temperatura_anual,
 )
 
-st.set_page_config(
-    page_title="Clima — autAnalisis",
-    page_icon="🌧️",
-    layout="wide",
-)
+# NOTA: st.set_page_config() se configura en app.py.
+# En Streamlit multipage, solo la página principal debe llamarlo.
 
 
 # ── Carga de datos ─────────────────────────────────────────────────────────
