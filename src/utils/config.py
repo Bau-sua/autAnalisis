@@ -98,7 +98,7 @@ ESQUEMAS_ESPERADOS: dict[str, dict[str, str]] = {
 # ── Parámetros de limpieza ─────────────────────────────────────────────────
 
 # Outliers: z-score > umbral se reemplaza por mediana del grupo
-OUTLIER_ZSCORE_UMBRAL: float = 2.5
+OUTLIER_ZSCORE_UMBRAL: float = 3.0
 
 # Imputación de nulos
 ESTRATEGIA_IMPUTACION_NUMERICA: str = "mediana_por_grupo"

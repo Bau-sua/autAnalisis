@@ -248,9 +248,9 @@ class TestPipelineIntegracion:
         """Simula un mini-pipeline: datos sucios → limpios."""
         df = pd.DataFrame(
             {
-                "fecha": ["2020-01-01", "15/06/2021", None, "2022-12-31"],
-                "id_categoria": ["1", "2", "3", "1"],
-                "cabezas": ["100", "99999", "200", None],
+                "fecha": ["2020-01-01", "15/06/2021", None, "2022-12-31", "2020-03-01", "2021-07-15"],
+                "id_categoria": ["1", "2", "1", "1", "2", "2"],
+                "cabezas": ["100", "99999", "200", "100", "150", "180"],
             }
         )
 
@@ -260,6 +260,6 @@ class TestPipelineIntegracion:
         df = tratar_outliers(df)
         df = eliminar_duplicados(df, "test")
 
-        assert df["fecha"].notna().sum() >= 3
+        assert df["fecha"].notna().sum() >= 5
         assert df["cabezas"].isnull().sum() == 0
-        assert df["cabezas"].max() <= 300  # outlier tratado
+        assert df.loc[1, "cabezas"] <= 200  # outlier reemplazado

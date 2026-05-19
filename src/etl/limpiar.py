@@ -204,7 +204,11 @@ def imputar_nulos(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def tratar_outliers(df: pd.DataFrame) -> pd.DataFrame:
-    """Detecta outliers por z-score y los reemplaza por la mediana del grupo.
+    """Detecta outliers por z-score agrupado y los reemplaza por la mediana del grupo.
+
+    Agrupa por id_departamento y/o id_categoria si están presentes para
+    detectar outliers dentro de cada contexto (evita falsos positivos
+    entre categorías o departamentos de distinto tamaño).
 
     Args:
         df: DataFrame.
@@ -216,32 +220,42 @@ def tratar_outliers(df: pd.DataFrame) -> pd.DataFrame:
     for col in df.columns:
         if not pd.api.types.is_numeric_dtype(df[col]):
             continue
-        if df[col].isnull().all() or df[col].nunique() < 2:
+        serie = df[col]
+        if serie.isnull().all() or serie.nunique() < 2:
             continue
 
-        # Calcular z-score (robusto: usar mediana y MAD)
-        mediana = df[col].median()
-        mad = (df[col] - mediana).abs().median()
-        if mad == 0:
-            # Fallback: usar desvío estándar para detectar outliers
-            std = df[col].std()
-            if std == 0 or pd.isna(std):
-                continue
-            z_score = (df[col] - mediana) / std
-        else:
-            z_score = 0.6745 * (df[col] - mediana) / mad
-        mask_outlier = (z_score.abs() > OUTLIER_ZSCORE_UMBRAL) & df[col].notna()
+        # Determinar columnas de agrupación
+        grupos = []
+        for gcol in ["id_departamento", "id_categoria"]:
+            if gcol in df.columns:
+                grupos.append(gcol)
 
+        # Calcular z-score por grupo usando numpy para evitar dtype conflicts
+        zscore = pd.Series(0.0, index=df.index)
+        for grp_keys, grp_idx in df.groupby(grupos).groups.items() if grupos else [((), df.index)]:
+            vals = serie.loc[grp_idx].values
+            mediana = np.median(vals[~np.isnan(vals)])
+            mad = np.median(np.abs(vals[~np.isnan(vals)] - mediana))
+            if mad == 0 or np.isnan(mad):
+                std = np.std(vals[~np.isnan(vals)])
+                if std == 0 or np.isnan(std):
+                    continue
+                zs = np.where(~np.isnan(vals), (vals - mediana) / std, 0)
+            else:
+                zs = np.where(~np.isnan(vals), 0.6745 * (vals - mediana) / mad, 0)
+            zscore.loc[grp_idx] = zs
+
+        mask_outlier = (zscore.abs() > OUTLIER_ZSCORE_UMBRAL) & serie.notna()
         if mask_outlier.sum() == 0:
             continue
 
-        # Reemplazar por mediana del grupo o global
-        valor_reemplazo = mediana
-        if "id_departamento" in df.columns:
-            medianas_grupo = df.groupby("id_departamento")[col].transform("median")
-            valor_reemplazo = medianas_grupo.where(medianas_grupo.notna(), mediana)
+        # Reemplazar con mediana del grupo (forzar cast al dtype original)
+        if grupos:
+            mediana_grupo = df.groupby(grupos)[col].transform("median")
+            df.loc[mask_outlier, col] = mediana_grupo.loc[mask_outlier].astype(serie.dtype)
+        else:
+            df.loc[mask_outlier, col] = serie.dtype.type(np.median(serie.dropna().values))
 
-        df.loc[mask_outlier, col] = valor_reemplazo.loc[mask_outlier] if isinstance(valor_reemplazo, pd.Series) else valor_reemplazo
         total_tratados += mask_outlier.sum()
         logger.debug("  %s: %d outliers tratados", col, mask_outlier.sum())
 
@@ -333,14 +347,20 @@ def limpiar_dataset(
     df = eliminar_duplicados(df, nombre)
     df = estandarizar_texto(df)
 
-    # Columnas de enteros que deben ser int
+    # Columnas de enteros: convertir float limpios a int64 nativo
     for col in df.columns:
         if df[col].dtype == "float64" and col.startswith("id_"):
             if df[col].notna().all():
-                df[col] = df[col].astype("Int64")
+                try:
+                    df[col] = df[col].astype("int64")
+                except (ValueError, TypeError):
+                    pass
         if col in ("cabezas", "año", "mes", "trimestre"):
             if df[col].dtype == "float64" and df[col].notna().all():
-                df[col] = df[col].astype("Int64")
+                try:
+                    df[col] = df[col].astype("int64")
+                except (ValueError, TypeError):
+                    pass
 
     logger.info("  → %d filas limpias", len(df))
     return df
