@@ -26,15 +26,15 @@ make reporte    # Informe anual (Markdown)
 
 ## 📋 Comandos disponibles
 
-| Comando | Qué hace |
-|---------|---------|
-| `make generar` | Genera 10 CSVs con datos ganaderos sintéticos (2020-2025) |
-| `make etl` | Pipeline de limpieza: normaliza, imputa, trata outliers → Parquet |
-| `make kpis` | Calcula indicadores: stock, faena, precios, clima, compuestos |
-| `make reporte AÑO=2024` | Genera informe anual/trimestral en Markdown con gráficos |
-| `make dashboard` | Inicia dashboard interactivo en http://localhost:8501 |
-| `make test` | Corre 22 tests unitarios |
-| `make notebook` | Jupyter Lab para exploración de datos |
+| Comando                 | Qué hace                                                          |
+| ----------------------- | ----------------------------------------------------------------- |
+| `make generar`          | Genera 10 CSVs con datos ganaderos sintéticos (2020-2025)         |
+| `make etl`              | Pipeline de limpieza: normaliza, imputa, trata outliers → Parquet |
+| `make kpis`             | Calcula indicadores: stock, faena, precios, clima, compuestos     |
+| `make reporte AÑO=2024` | Genera informe anual/trimestral en Markdown + PDF con gráficos          |
+| `make dashboard`        | Inicia dashboard interactivo en http://localhost:8501             |
+| `make test`             | Corre 22 tests unitarios                                          |
+| `make notebook`         | Jupyter Lab para exploración de datos                             |
 
 ### Informes trimestrales
 
@@ -72,11 +72,11 @@ make reporte AÑO=2024   # ahora incluye análisis narrativo de Grok
 
 ### Datos generados
 
-| Capa | Formato | Archivos | Características |
-|------|---------|---------|----------------|
-| **Raw** | CSV | 10 | Datos «sucios»: nulos (3%), outliers (2%), fechas inconsistentes (5%), duplicados |
-| **Clean** | Parquet | 10 | Fechas normalizadas, nulos imputados, outliers tratados, texto estandarizado |
-| **Processed** | Parquet | 8 | KPIs: stock, faena, precios, clima, compuestos |
+| Capa          | Formato | Archivos | Características                                                                   |
+| ------------- | ------- | -------- | --------------------------------------------------------------------------------- |
+| **Raw**       | CSV     | 10       | Datos «sucios»: nulos (3%), outliers (2%), fechas inconsistentes (5%), duplicados |
+| **Clean**     | Parquet | 10       | Fechas normalizadas, nulos imputados, outliers tratados, texto estandarizado      |
+| **Processed** | Parquet | 8        | KPIs: stock, faena, precios, clima, compuestos                                    |
 
 ### Técnicas de limpieza
 
@@ -92,11 +92,11 @@ make reporte AÑO=2024   # ahora incluye análisis narrativo de Grok
 
 Dashboard interactivo con Streamlit y Plotly. Tres vistas:
 
-| Página | Contenido |
-|--------|----------|
-| **Inicio** | 5 KPI cards, tabla resumen anual, gráficos principales |
+| Página        | Contenido                                                                                    |
+| ------------- | -------------------------------------------------------------------------------------------- |
+| **Inicio**    | 5 KPI cards, tabla resumen anual, gráficos principales                                       |
 | **Ganadería** | Stock (evolución, depto, categoría), faena (mensual + anual), precios, ratio ternero/novillo |
-| **Clima** | Precipitaciones, anomalías por departamento, temperatura, impacto sequía 2022-2023 |
+| **Clima**     | Precipitaciones, anomalías por departamento, temperatura, impacto sequía 2022-2023           |
 
 ### Gráficos incluidos (10)
 
@@ -131,6 +131,7 @@ Dashboard interactivo con Streamlit y Plotly. Tres vistas:
 ### Template trimestral
 
 Incluye además:
+
 - Faena y producción acumulada del trimestre
 - Alertas automáticas (sequía, faena de hembras elevada, ratio alto)
 - Proyección para el resto del año
@@ -139,7 +140,7 @@ Incluye además:
 
 Cuando se configura `XAI_API_KEY`, Grok (xAI) genera un análisis de 3 párrafos en español rioplatense con voseo:
 
-> *"Durante 2024 el stock bovino de San Luis alcanzó 1.295.755 cabezas, con un crecimiento interanual del 11%, impulsado por las condiciones climáticas favorables. Las precipitaciones anuales de 497 mm, un 53,4% por encima del promedio..."*
+> _"Durante 2024 el stock bovino de San Luis alcanzó 1.295.755 cabezas, con un crecimiento interanual del 11%, impulsado por las condiciones climáticas favorables. Las precipitaciones anuales de 497 mm, un 53,4% por encima del promedio..."_
 
 Sin API key, el sistema usa un fallback basado en reglas.
 
@@ -219,33 +220,33 @@ autAnalisis/
 
 ## 🛠️ Stack tecnológico
 
-| Herramienta | Uso |
-|-------------|-----|
-| **Python 3.12** | Lenguaje base |
-| **uv** | Package manager y entorno virtual |
+| Herramienta        | Uso                                |
+| ------------------ | ---------------------------------- |
+| **Python 3.12**    | Lenguaje base                      |
+| **uv**             | Package manager y entorno virtual  |
 | **pandas + numpy** | Manipulación y generación de datos |
-| **Streamlit** | Dashboard interactivo |
-| **Plotly** | Gráficos interactivos |
-| **matplotlib** | Gráficos para reportes (base64) |
-| **Jinja2** | Templates de informes |
-| **Grok (xAI)** | Narrativa automática con IA |
-| **pytest** | Tests unitarios |
-| **GitHub Actions** | CI/CD programado |
-| **pyarrow** | Formato Parquet |
+| **Streamlit**      | Dashboard interactivo              |
+| **Plotly**         | Gráficos interactivos              |
+| **matplotlib**     | Gráficos para reportes (base64)    |
+| **Jinja2**         | Templates de informes              |
+| **Grok (xAI)**     | Narrativa automática con IA        |
+| **pytest**         | Tests unitarios                    |
+| **GitHub Actions** | CI/CD programado                   |
+| **pyarrow**        | Formato Parquet                    |
 
 ---
 
 ## 📊 KPIs calculados
 
-| Indicador | Descripción |
-|-----------|------------|
-| **Stock total** | Cabezas por año, departamento y categoría |
-| **Variación YoY** | Interanual de stock, faena y precios |
-| **Tasa de extracción** | Faena / Stock |
-| **Relación ternero/novillo** | Indicador de ciclo ganadero |
-| **% Hembras en faena** | Alerta de liquidación de vientres |
-| **Precipitación anual** | Con anomalía vs media histórica |
-| **Condición hídrica** | Seco / Normal / Húmedo por departamento |
+| Indicador                    | Descripción                               |
+| ---------------------------- | ----------------------------------------- |
+| **Stock total**              | Cabezas por año, departamento y categoría |
+| **Variación YoY**            | Interanual de stock, faena y precios      |
+| **Tasa de extracción**       | Faena / Stock                             |
+| **Relación ternero/novillo** | Indicador de ciclo ganadero               |
+| **% Hembras en faena**       | Alerta de liquidación de vientres         |
+| **Precipitación anual**      | Con anomalía vs media histórica           |
+| **Condición hídrica**        | Seco / Normal / Húmedo por departamento   |
 
 ---
 
@@ -253,19 +254,22 @@ autAnalisis/
 
 San Luis tiene dos perfiles productivos principales:
 
-| Zona | Departamentos | Actividad |
-|------|--------------|----------|
-| **Norte** | Ayacucho, Belgrano, San Martín, Junín | Ganadería bovina extensiva (cría) |
-| **Sur** | Dupuy, Pedernera, Pringles | Ganadería mixta + agricultura |
-| **Centro** | Chacabuco, Pueyrredón | Mixto |
+| Zona       | Departamentos                         | Actividad                         |
+| ---------- | ------------------------------------- | --------------------------------- |
+| **Norte**  | Ayacucho, Belgrano, San Martín, Junín | Ganadería bovina extensiva (cría) |
+| **Sur**    | Dupuy, Pedernera, Pringles            | Ganadería mixta + agricultura     |
+| **Centro** | Chacabuco, Pueyrredón                 | Mixto                             |
 
 **9 departamentos · ~60 establecimientos ficticios · 7 categorías bovinas · 5 años de datos (2020-2024)**
 
 ### Categorías bovinas (SENASA)
+
 Ternero, Ternera, Novillito, Vaquillona, Novillo, Vaca, Toro
 
 ### Fuentes de referencia
+
 Los datos sintéticos están calibrados con estadísticas públicas de:
+
 - **SENASA** (stock, movimientos, faena)
 - **IPCVA** (precios, exportaciones)
 - **MAGyP** (estimaciones agrícolas)
@@ -279,4 +283,4 @@ Proyecto de estudio. Datos sintéticos, sin información real de productores.
 
 ---
 
-*«El stock bovino de San Luis se ubicó en 1.295.755 cabezas, con una variación interanual del +11.0%.»* — Informe 2024
+_«El stock bovino de San Luis se ubicó en 1.295.755 cabezas, con una variación interanual del +11.0%.»_ — Informe 2024
