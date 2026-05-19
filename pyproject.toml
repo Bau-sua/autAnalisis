@@ -1,0 +1,39 @@
+[project]
+name = "autanalisis"
+version = "0.1.0"
+description = "Automatización de reportes y dashboard agro-ganaderos para San Luis, Argentina"
+requires-python = ">=3.12"
+dependencies = [
+  "pandas>=2.2",
+  "numpy>=2.0",
+  "openpyxl>=3.1",
+  "faker>=30",
+  "matplotlib>=3.8",
+  "seaborn>=0.13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "jupyter>=1.1", "ipykernel>=6"]
+dashboard = ["streamlit>=1.40", "plotly>=5.24"]
+reporte = ["jinja2>=3.1", "weasyprint>=62"]
+completo = ["autanalisis[dashboard,reporte,dev]"]
+
+[dependency-groups]
+dev = ["pytest>=8", "jupyter>=1.1", "ipykernel>=6"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.hatch.build.targets.wheel]
+packages = [
+  "src/generacion",
+  "src/etl",
+  "src/analisis",
+  "src/reporte",
+  "src/utils",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

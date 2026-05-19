@@ -1,2 +1,25 @@
 # Local Pi runtime state
 .atl/
+.fresh/
+.pi-lens/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+uv.lock
+
+# Datos generados (se regeneran con make generar)
+data/raw/*.csv
+data/clean/
+data/processed/
+
+# Notebooks ejecutados
+notebooks/.ipynb_checkpoints/
+
+# Reportes generados
+reports/*.pdf
+
+# OS
+.DS_Store
