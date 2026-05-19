@@ -13,7 +13,7 @@ __pycache__/
 # Datos generados (se regeneran con make generar)
 data/raw/*.csv
 data/clean/
-data/processed/
+# data/processed/  # <- Comentado: KPIs necesarios para Streamlit Cloud
 
 # Notebooks ejecutados
 notebooks/.ipynb_checkpoints/
