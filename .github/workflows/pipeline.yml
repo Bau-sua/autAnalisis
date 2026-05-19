@@ -36,9 +36,6 @@ on:
 
 env:
   PYTHONUNBUFFERED: "1"
-  # Si querés narrativas con IA, configurá XAI_API_KEY en los secrets del repo:
-  #   https://github.com/Bau-sua/autAnalisis/settings/secrets/actions
-  XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
 
 jobs:
   generar-informe:
@@ -74,6 +71,7 @@ jobs:
         env:
           AÑO_FLAG: ${{ github.event.inputs.año || '' }}
           TRIM_FLAG: ${{ github.event.inputs.trimestre || '' }}
+          XAI_API_KEY: ${{ secrets.XAI_API_KEY || '' }}
         run: |
           AÑO=${AÑO_FLAG:-$(date +%Y)}
           if [ -n "$TRIM_FLAG" ]; then
