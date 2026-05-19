@@ -25,7 +25,8 @@ kpis:  ## Calcular KPIs e indicadores compuestos
 	uv run python src/analisis/kpis.py
 	uv run python src/etl/limpiar.py
 
-reporte:  ## Generar reporte trimestral
+reporte:  ## Generar informe anual (default: 2024)
+	uv run python src/reporte/generar_reporte.py --tipo anual --año $${AÑO:-2024}
 	uv run python src/reporte/generar_reporte.py
 
 dashboard:  ## Iniciar dashboard Streamlit
