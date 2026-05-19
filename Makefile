@@ -21,6 +21,10 @@ notebook:  ## Iniciar Jupyter Lab en notebooks/
 etl:  ## Ejecutar pipeline ETL (limpieza + transformación)
 	uv run python src/etl/limpiar.py
 
+kpis:  ## Calcular KPIs e indicadores compuestos
+	uv run python src/analisis/kpis.py
+	uv run python src/etl/limpiar.py
+
 reporte:  ## Generar reporte trimestral
 	uv run python src/reporte/generar_reporte.py
 
