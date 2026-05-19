@@ -1,0 +1,106 @@
+# {{ titulo }}
+
+**Fecha de generación:** {{ fecha_generacion }}
+**Período:** {{ año }}
+
+---
+
+## 📊 Resumen Ejecutivo
+
+| Indicador | Valor | Var. Interanual |
+|-----------|-------|-----------------|
+| Stock Bovino Total | {{ stock_total }} | {{ stock_var_yoy }} |
+| Faena Anual | {{ faena_total }} | {{ faena_var_yoy }} |
+| Precio Novillo (prom.) | {{ precio_novillo_prom }} | {{ precio_var_yoy }} |
+| Precipitación Anual | {{ pp_anual }} | {{ pp_anomalia }} |
+| Tasa de Extracción | {{ tasa_extraccion }} | — |
+
+---
+
+## 🐄 1. Stock Bovino
+
+El stock bovino de la provincia de San Luis al cierre de **{{ año }}** se ubicó en
+**{{ stock_total }}**, lo que representa una variación interanual del **{{ stock_var_yoy }}**.
+
+![Evolución del Stock Bovino]({{ grafico_stock_evolucion }})
+
+### Distribución por Departamento (Top 5)
+
+| Departamento | Cabezas |
+|-------------|---------|
+{% for d in top_deptos %}
+| {{ d.nombre }} | {{ d.cabezas }} |
+{% endfor %}
+
+### Composición del Stock por Categoría
+
+![Composición del Stock]({{ grafico_stock_categoria }})
+
+---
+
+## 🔪 2. Faena
+
+La faena total durante **{{ año }}** alcanzó **{{ faena_total }}**, con una variación
+interanual del **{{ faena_var_yoy }}**.
+
+| Indicador | Valor |
+|-----------|-------|
+| Producción de carne | {{ faena_produccion }} |
+| Peso promedio carcasa | {{ faena_peso_promedio }} |
+| Participación de hembras | {{ faena_hembras_pct }} |
+
+### Faena Mensual
+
+![Faena Mensual {{ año }}]({{ grafico_faena_mensual }})
+
+---
+
+## 💰 3. Precios
+
+El precio promedio del novillo durante **{{ año }}** fue de **{{ precio_novillo_prom }}**,
+con una variación interanual del **{{ precio_var_yoy }}**.
+
+![Evolución de Precios]({{ grafico_precios }})
+
+### Relaciones de Precio
+
+| Relación | Valor |
+|----------|-------|
+| Ternero / Novillo | {{ ratio_ternero_novillo }} |
+| Vaca / Novillo | {{ ratio_vaca_novillo }} |
+
+---
+
+## 🌧️ 4. Clima
+
+La precipitación anual en **{{ año }}** totalizó **{{ pp_anual }}**, lo que representa
+una anomalía del **{{ pp_anomalia }}** respecto a la media histórica. La temperatura
+media fue de **{{ temp_media }}**.
+
+![Precipitación Anual]({{ grafico_clima }})
+
+{% if deptos_secos %}
+### Departamentos con déficit hídrico severo (>30% bajo la media)
+
+Los siguientes departamentos registraron condiciones de sequía durante el período:
+
+{% for d in deptos_secos %}
+- ID Departamento: {{ d }}
+{% endfor %}
+{% endif %}
+
+---
+
+## 📈 5. Conclusiones
+
+1. **Stock bovino**: El rodeo provincial {{ "creció" if stock_var_yoy.startswith("+") else "disminuyó" }} respecto al año anterior, reflejando
+   {{ "una fase de retención" if stock_var_yoy.startswith("+") else "una fase de liquidación" }} del ciclo ganadero.
+2. **Faena**: La actividad de faena {{ "aumentó" if faena_var_yoy.startswith("+") else "disminuyó" }}
+   con una participación de hembras del {{ faena_hembras_pct }}.
+3. **Precios**: El precio del novillo mostró una tendencia {{ "alcista" if precio_var_yoy.startswith("+") else "bajista" }}.
+4. **Clima**: Las condiciones climáticas fueron {{ "favorables" if pp_anomalia.startswith("+") else "desfavorables" }}
+   para la actividad ganadera.
+
+---
+
+*Informe generado automáticamente por autAnalisis. Datos sintéticos para demostración.*

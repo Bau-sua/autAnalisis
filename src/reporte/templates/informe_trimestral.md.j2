@@ -1,0 +1,98 @@
+# {{ titulo }}
+
+**Fecha de generación:** {{ fecha_generacion }}
+**Período:** Q{{ trimestre }} {{ año }} (meses {{ meses_trimestre | join(', ') }})
+
+---
+
+## 📊 Resumen del Trimestre
+
+| Indicador | Acumulado Q{{ trimestre }} | Variación Interanual |
+|-----------|---------------------------|---------------------|
+| Stock Bovino Total | {{ stock_total }} | {{ stock_var_yoy }} |
+| Faena Trimestral | {{ faena_trimestral }} | — |
+| Producción de Carne | {{ produccion_trimestral }} | — |
+| Precio Novillo (prom.) | {{ precio_novillo_prom }} | {{ precio_var_yoy }} |
+| Precipitación Anual acum. | {{ pp_anual }} | {{ pp_anomalia }} |
+
+---
+
+## 🐄 1. Stock Bovino
+
+Al cierre del trimestre, el stock bovino provincial se estima en **{{ stock_total }}**,
+con una variación interanual del **{{ stock_var_yoy }}**.
+
+![Evolución del Stock Bovino]({{ grafico_stock_evolucion }})
+
+### Composición del Stock
+
+![Composición del Stock]({{ grafico_stock_categoria }})
+
+---
+
+## 🔪 2. Faena Trimestral
+
+Durante el **Q{{ trimestre }} {{ año }}** se faenaron **{{ faena_trimestral }}**,
+con una producción de carne de **{{ produccion_trimestral }}**.
+
+### Faena Mensual del Año
+
+![Faena Mensual {{ año }}]({{ grafico_faena_mensual }})
+
+---
+
+## 💰 3. Precios
+
+El precio promedio del novillo en el trimestre fue de **{{ precio_novillo_prom }}**,
+con una variación interanual del **{{ precio_var_yoy }}**.
+
+![Evolución de Precios]({{ grafico_precios }})
+
+### Relaciones de Precio
+
+| Relación | Promedio Trimestral |
+|----------|---------------------|
+| Ternero / Novillo | {{ ratio_ternero_novillo }} |
+| Vaca / Novillo | {{ ratio_vaca_novillo }} |
+
+---
+
+## 🌧️ 4. Condiciones Climáticas
+
+La precipitación acumulada anual alcanza **{{ pp_anual }}** (anomalía: {{ pp_anomalia }}).
+Temperatura media del período: **{{ temp_media }}**.
+
+![Precipitación Anual]({{ grafico_clima }})
+
+---
+
+## ⚠️ 5. Alertas del Trimestre
+
+{% if pp_anomalia.startswith("-") %}
+- 🔴 **Déficit hídrico**: La precipitación acumulada está por debajo de la media histórica.
+  Se recomienda monitorear la condición de pasturas.
+{% endif %}
+
+{% if faena_hembras_pct is defined and faena_hembras_pct|float > 48 %}
+- 🟡 **Faena de hembras elevada**: La participación de hembras en faena supera el 48%,
+  posible indicador de liquidación de vientres. Monitorear ciclo ganadero.
+{% endif %}
+
+{% if ratio_ternero_novillo is defined and ratio_ternero_novillo|float > 1.5 %}
+- 🟡 **Relación ternero/novillo alta**: El ratio ternero/novillo supera 1.5, indicando
+  una fase de retención con escasez de oferta de invernada.
+{% endif %}
+
+---
+
+## 📈 6. Proyección Anual
+
+En base a los datos acumulados al Q{{ trimestre }}, se proyecta:
+
+1. **Stock bovino**: {{ "En fase de retención" if stock_var_yoy.startswith("+") else "En fase de liquidación" }}.
+2. **Precios**: Tendencia {{ "alcista" if precio_var_yoy.startswith("+") else "bajista" }} para el resto del año.
+3. **Clima**: Condiciones {{ "favorables" if pp_anomalia.startswith("+") else "desfavorables" }} para la ganadería.
+
+---
+
+*Informe generado automáticamente por autAnalisis. Datos sintéticos para demostración.*
