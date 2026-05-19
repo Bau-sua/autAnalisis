@@ -25,15 +25,6 @@ on:
         required: false
         type: string
 
-  # También se ejecuta en cada push a main para validar que el pipeline no se rompe
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "dashboard/**"
-      - "pyproject.toml"
-      - ".github/workflows/pipeline.yml"
-
 env:
   PYTHONUNBUFFERED: "1"
 
