@@ -8,7 +8,6 @@ __pycache__/
 *.py[cod]
 .venv/
 *.egg-info/
-uv.lock
 
 # Datos generados (se regeneran con make generar)
 data/raw/*.csv

@@ -1,0 +1,93 @@
+# Pipeline trimestral de generación de informes ganaderos
+#
+# Se ejecuta automáticamente el primer día de cada trimestre
+# (1° de enero, abril, julio, octubre) y también puede dispararse
+# manualmente desde la pestaña Actions del repositorio.
+#
+# Flujo: generar datos → limpiar (ETL) → KPIs → informe
+
+name: Informe Trimestral
+
+on:
+  schedule:
+    # Cada 1° de enero, abril, julio, octubre a las 00:00 UTC
+    # (equivale a las 21:00 del día anterior en Argentina)
+    - cron: "0 0 1 1,4,7,10 *"
+
+  workflow_dispatch:
+    inputs:
+      año:
+        description: "Año del informe (default: año actual)"
+        required: false
+        type: string
+      trimestre:
+        description: "Trimestre (1-4). Si se omite, genera informe anual."
+        required: false
+        type: string
+
+  # También se ejecuta en cada push a main para validar que el pipeline no se rompe
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "dashboard/**"
+      - "pyproject.toml"
+      - ".github/workflows/pipeline.yml"
+
+env:
+  PYTHONUNBUFFERED: "1"
+  # Si querés narrativas con IA, configurá XAI_API_KEY en los secrets del repo:
+  #   https://github.com/Bau-sua/autAnalisis/settings/secrets/actions
+  XAI_API_KEY: ${{ secrets.XAI_API_KEY }}
+
+jobs:
+  generar-informe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: 🐍 Instalar uv y Python
+        uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: 📦 Instalar dependencias
+        run: uv sync --frozen
+
+      - name: 🧪 Ejecutar tests
+        run: uv run pytest tests/ -q
+
+      - name: 🏭 Generar datos sintéticos
+        run: uv run python src/generacion/generar_datos.py
+
+      - name: 🔧 Pipeline ETL (limpieza)
+        run: uv run python src/etl/limpiar.py
+
+      - name: 📊 Calcular KPIs
+        run: uv run python src/analisis/kpis.py
+
+      - name: 📄 Generar informe
+        env:
+          AÑO_FLAG: ${{ github.event.inputs.año || '' }}
+          TRIM_FLAG: ${{ github.event.inputs.trimestre || '' }}
+        run: |
+          AÑO=${AÑO_FLAG:-$(date +%Y)}
+          if [ -n "$TRIM_FLAG" ]; then
+            uv run python src/reporte/generar_reporte.py --tipo trimestral --año "$AÑO" --trimestre "$TRIM_FLAG"
+          else
+            uv run python src/reporte/generar_reporte.py --tipo anual --año "$AÑO"
+          fi
+
+      - name: 📋 Listar resultados
+        run: ls -lh reports/
+
+      - name: 📤 Subir informes como artefacto
+        uses: actions/upload-artifact@v4
+        with:
+          name: informes-${{ github.run_number }}
+          path: reports/*.md
+          retention-days: 90
