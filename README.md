@@ -2,6 +2,8 @@
 
 **Automatización de reportes y dashboard agro-ganaderos para San Luis, Argentina.**
 
+> 🇺🇸 [English version](README_EN.md)
+
 Pipeline completo desde datos crudos sintéticos hasta informes narrativos con IA y dashboard interactivo. Diseñado para ejecución trimestral y anual sin intervención manual.
 
 ---
