@@ -6,6 +6,8 @@
 
 Pipeline completo desde datos crudos sintéticos hasta informes narrativos con IA y dashboard interactivo. Diseñado para ejecución trimestral y anual sin intervención manual.
 
+> **Status: COMPLETED** ✅ — June 2026
+
 ---
 
 ## 🚀 Arranque rápido
